@@ -1,2 +1,10 @@
+node_modules/
+.env
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+*.pem
+
 # vscode
 .vscode

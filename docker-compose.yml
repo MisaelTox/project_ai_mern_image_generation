@@ -1,0 +1,29 @@
+services:
+  # El Cerebro
+  server:
+    build: ./server
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mongodb  # <--- IMPORTANTE: Espera a que la base de datos esté lista
+
+  # La Cara
+  client:
+    build: ./client
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+  # NUEVO: El Almacén (Base de Datos)
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db # <--- Esto evita que se borren tus fotos al apagar Docker
+
+volumes:
+  mongo-data: # Definimos el volumen para persistencia
