@@ -1,0 +1,1 @@
+key_name = "key-ai-mern" # Replace with your actual .pem key name (without .pem)
