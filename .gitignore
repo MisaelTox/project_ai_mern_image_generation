@@ -8,6 +8,7 @@ node_modules/
 terraform/*.tfstate
 terraform/*.tfstate.backup
 terraform/.terraform/
+terraform/*.tfstate*
 
 # vscode
 .vscode
