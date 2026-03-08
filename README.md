@@ -1,118 +1,70 @@
-MERN AI Image Generation - AWS Cloud Infrastructure
-This repository is a production-ready deployment of a MERN (MongoDB, Express, React, Node.js) application. While the application provides a DALL-E/MidJourney-style experience for generating images, the core value of this project lies in the automated Cloud Infrastructure and DevOps practices implemented.
+# MERN AI Image Generation — AWS Cloud Infrastructure
 
-🚀 The DevOps Transformation
-I have transformed a standard local development project into a scalable cloud-ready application by implementing:
+![CI/CD](https://github.com/MisaelTox/project_ai_mern_image_generation/actions/workflows/ci-cd.yml/badge.svg?branch=main)
+![AWS](https://img.shields.io/badge/AWS-EC2-orange?logo=amazon-aws)
+![Terraform](https://img.shields.io/badge/IaC-Terraform-purple?logo=terraform)
+![Docker](https://img.shields.io/badge/Container-Docker%20Compose-blue?logo=docker)
 
-Infrastructure as Code (IaC): Using Terraform to provision AWS resources (EC2, Security Groups, Networking).
+Production-ready cloud deployment of a MERN stack AI image generation app (DALL-E/MidJourney style), showcasing Infrastructure as Code, container orchestration, and automated CI/CD on AWS.
 
-Containerization: Full orchestration of the Frontend, Backend, and Database using Docker and Docker Compose.
+> **Deployment Status:** Offline — infrastructure decommissioned via `terraform destroy` to avoid ongoing costs. All IaC configs available in `/terraform` for review.
 
-Automated Provisioning: Advanced user_data bash scripting to automate the entire environment setup upon instance launch.
+---
 
-Cloud Optimization: Migrated the OS to Ubuntu 24.04 to ensure compatibility with modern docker-buildx plugins.
+## 🏗️ Architecture
 
-🏗 Architecture Overview
-Cloud: AWS (EC2 Instance)
+| Layer | Technology |
+|-------|-----------|
+| Infrastructure | AWS EC2 + Security Groups + VPC |
+| IaC | Terraform |
+| Orchestration | Docker Compose (3-tier) |
+| Frontend | React + Vite (port 5173) |
+| Backend | Node.js + Express (port 8080) |
+| Database | MongoDB (containerized) |
+| CI/CD | GitHub Actions |
 
-Deployment: Docker Compose (3-Tier Architecture)
+---
 
-Frontend: React (Vite) running on port 5173
+## 🔄 CI/CD Pipeline
 
-Backend: Node.js/Express running on port 8080
+Every push to `main` runs two parallel jobs before requesting approval:
+```
+Push to main
+      ↓
+✅ Terraform CI (parallel)    ✅ Docker Build Check (parallel)
+   → terraform fmt               → docker compose build
+   → terraform validate          → verifies all 3 images build
+      ↓                               ↓
+      └──────────── both pass ────────┘
+                      ↓
+           ⏸️ Manual approval gate
+                      ↓
+            🚀 terraform apply → provisions EC2
+```
 
-Database: MongoDB containerized for data persistence
+AWS credentials stored as **GitHub Secrets** — never hardcoded.
 
-Networking: Custom AWS Security Groups configured for cross-service communication.
+---
 
-🛠 Deployment Instructions
-To replicate this deployment, ensure you have your AWS credentials configured and Terraform installed.
-
-Initialize the project:
-
-Bash
+## 🚀 Deployment
+```bash
+cd terraform
 terraform init
-Deploy infrastructure:
-
-Bash
 terraform apply -auto-approve
-Wait & Access:
-The automation script will take approximately 5-8 minutes to install Docker, clone the repository, and build the images. You can then access the app at:
-http://<EC2_PUBLIC_IP>:5173
+```
 
-💡 Technical Challenges Solved
-Buildx Compatibility: Fixed a critical issue where Amazon Linux 2023 lacked the necessary Buildx version for modern Docker Compose builds.
-
-Security Hardening: Implemented specific ingress rules to only allow traffic on necessary ports (22, 5173, 8080), following the principle of least privilege.
-
-Service Synchronization: Orchestrated container startup order to ensure MongoDB is ready before the Backend attempts to connect.
-
-
-
-
-# Build and Deploy a Full Stack MERN AI Image Generation App  MidJourney & DALL E Clone
-![Image Generation App](https://i.ibb.co/p0f27C2/Thumbnail-9.png)
-
-### [🌟 Become a top 1% Next.js 13 developer in only one course](https://jsmastery.pro/next13)
-### [🚀 Land your dream programming job in 6 months](https://jsmastery.pro/masterclass)
-
-### Launch your development career with project-based coaching - https://www.jsmastery.pro
-
-
-# AI Image Generation Stack (DALL-E + MERN)
-### *Modernization, Containerization, and Infrastructure as Code*
-
-This project is an enhanced version of a MERN-stack AI showcase. My contribution focused on **architecting the cloud infrastructure** and transforming a local application into a containerized, production-ready system using DevOps best practices.
+The `user_data` script automatically installs Docker, clones the repo, and builds all images on the EC2 instance (~5-8 min). Access the app at `http://<EC2_PUBLIC_IP>:5173`.
 
 ---
 
-## 🛠️ My Technical Contributions
+## 📝 Lessons Learned
 
-I took the core application logic and implemented the following **architectural milestones**:
-
-* **Infrastructure as Code (IaC):** Designed and deployed the entire AWS ecosystem (EC2, Security Groups, VPC) using **Terraform**.
-* **Container Orchestration:** Architected a multi-container environment with **Docker & Docker-Compose**, ensuring seamless communication between the React frontend and Node.js backend.
-* **Cloud Lifecycle Management:** Managed the full deployment cycle on **AWS**, including the final decommissioning of resources to optimize cloud costs.
-* **Production Debugging:** Resolved critical networking bottlenecks, including CORS policy configurations, environment variable injection in Vite, and Linux-side Docker permissions.
-
----
-
-## 🌐 Deployment Status
-* **Status:** **Offline** (Infrastructure decommissioned via `terraform destroy` to optimize cloud costs).
-* **Original Environment:** AWS EC2 (Amazon Linux).
-* **Architecture Blueprint:** All IaC configurations are available in the `/terraform` directory for review.
-
-
+- **CI/CD with GitHub Actions** — parallel Terraform + Docker Compose validation with manual approval gate before any AWS provisioning
+- **Buildx compatibility** — fixed Docker Compose build failures on Amazon Linux 2023 by migrating to Ubuntu 24.04 which includes modern `docker-buildx` plugins
+- **Security hardening** — least privilege Security Groups exposing only ports 22, 5173, and 8080
+- **Service synchronization** — orchestrated container startup order via Docker Compose `depends_on` to ensure MongoDB is ready before the backend connects
+- **CORS & environment variables** — resolved cross-container networking issues and Vite environment variable injection in production
 
 ---
 
-## 🛠️ Tech Stack & Skills
-
-| Layer | Technology | Key Skill Demonstrated |
-| :--- | :--- | :--- |
-| **Infrastructure** | **Terraform** | Infrastructure as Code (IaC) |
-| **Deployment** | **Docker / Docker-Compose** | Containerization & Orchestration |
-| **Cloud** | **AWS (EC2, VPC, SG)** | Public Cloud Administration |
-| **Frontend** | React.js, Tailwind CSS, Vite | Frontend Modernization |
-| **Backend** | Node.js, Express.js | API Management & Debugging |
-| **Database** | MongoDB Atlas | Cloud Database Integration |
-
----
-
-## 📦 Project Structure
-
-```text
-├── terraform/       # My IaC configuration files (AWS Blueprint)
-├── docker-compose.yml # Service orchestration
-├── client/          # Frontend (Optimized for Docker builds)
-└── server/          # Backend (Configured for Cloud environments)
-
-
-🛡️ Key Challenges Overcome
-Automated Provisioning: Successfully replaced manual AWS setup with a repeatable Terraform script, ensuring the Security Groups (ports 5173, 8080) were correctly configured by code.
-
-Network Resolution: Fixed "Unexpected token" errors caused by incorrect IP routing between containers in the production environment.
-
-Cost-Effective Scalability: Implemented a clean teardown process using Terraform to ensure no orphaned resources remained in the cloud.
-
-Enhanced & Engineered by Misael Toxcatl Showcasing DevOps, Cloud Architecture, and Full-Stack Engineering skills.
+*Fork of [adrianhajdin/project_ai_mern_image_generation](https://github.com/adrianhajdin/project_ai_mern_image_generation). Cloud infrastructure, containerization, and CI/CD pipeline added by MisaelTox.*
