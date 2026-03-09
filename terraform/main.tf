@@ -9,7 +9,7 @@ resource "aws_security_group" "mern_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Puerto para el Frontend (Vite)
+  # Frontend port (Vite dev server)
   ingress {
     from_port   = 5173
     to_port     = 5173
@@ -17,7 +17,7 @@ resource "aws_security_group" "mern_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  # Puerto para el Backend (Node/Express)
+  # Backend port (Node/Express API)
   ingress {
     from_port   = 8080
     to_port     = 8080
@@ -33,7 +33,7 @@ resource "aws_security_group" "mern_sg" {
   }
 }
 
-# 2. Búsqueda de la imagen de Ubuntu 24.04 (Free Tier)
+# 2. AMI lookup - Ubuntu 24.04 (Free Tier)
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -43,53 +43,54 @@ data "aws_ami" "ubuntu" {
   }
 }
 
-# 3. Recurso de la Instancia EC2
+# 3. EC2 Instance
 resource "aws_instance" "mern_server" {
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = var.key_name
   vpc_security_group_ids = [aws_security_group.mern_sg.id]
 
-  # Script de configuración automática
+  # Bootstrap script for automated setup
   user_data = <<-EOF
               #!/bin/bash
-              # Redirigir salida a logs para diagnóstico
+              # Redirect output to log file for debugging
               exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-              
-              echo "--- Iniciando configuración de Ubuntu ---"
+
+              echo "--- Starting Ubuntu setup ---"
               apt-get update -y
-              
-              # Instalación de dependencias (Docker y Git)
+
+              # Install dependencies (Docker and Git)
               apt-get install -y docker.io git docker-compose-v2
-              
-              # Habilitar y arrancar Docker
+
+              # Enable and start Docker service
               systemctl enable --now docker
-              
-              # Agregar el usuario ubuntu al grupo docker
+
+              # Add ubuntu user to docker group
               usermod -aG docker ubuntu
-              
-              # Preparar directorio de la aplicación
+
+              # Prepare application directory
               mkdir -p /home/ubuntu/app
               cd /home/ubuntu/app
-              
-              # Clonar el repositorio
+
+              # Clone the repository
               git clone https://github.com/MisaelTox/project_ai_mern_image_generation.git .
-              
-              # Crear el archivo .env dentro de la carpeta server
+
+              # Create .env file inside server folder
+              # NOTE: In production, credentials should be pulled from AWS Secrets Manager
               mkdir -p server
               cat <<EOT > server/.env
               MONGODB_URL=mongodb://mongodb:27017/mern_ai
               OPENAI_API_KEY=PLACEHOLDER_REPLACE_ME_VIA_SSH
               EOT
-              
-              # Corregir permisos para que el usuario ubuntu sea dueño de los archivos
+
+              # Fix ownership for ubuntu user
               chown -R ubuntu:ubuntu /home/ubuntu/app
-              
-              echo "--- Lanzando contenedores con Docker Compose ---"
-              # Ejecutar como root el build inicial
+
+              echo "--- Launching containers with Docker Compose ---"
+              # Run initial build as root
               docker compose up -d --build
-              
-              echo "Despliegue finalizado con éxito."
+
+              echo "Deployment completed successfully."
               EOF
 
   tags = {
